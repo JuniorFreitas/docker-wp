@@ -76,29 +76,6 @@ RUN apk --update add \
 apc.enable_cli = 1\n\
 cgi.fix_pathinfo = 0" >> /usr/local/etc/php/php.ini
 
-# Configure version constraints
-ENV VERSION_PRESTISSIMO_PLUGIN=^0.3.0 \
-    COMPOSER_ALLOW_SUPERUSER=1
-
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
-    composer global require --optimize-autoloader \
-        "hirak/prestissimo:${VERSION_PRESTISSIMO_PLUGIN}" && \
-    composer global dumpautoload --optimize
-
-# xdebug
-ENV XDEBUG_VERSION 2.7.0alpha1
-RUN apk --no-cache add --virtual .build-deps \
-        g++ \
-        autoconf \
-        make && \
-    pecl install xdebug-$XDEBUG_VERSION && \
-    docker-php-ext-enable xdebug && \
-    apk del .build-deps && \
-    rm -r /tmp/pear/* && \
-    echo -e "xdebug.remote_port = 9001\n\
-xdebug.idekey = \"PHPSTORM\"\n\
-xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-
 RUN apk add -U tzdata
 ENV TZ=America/Fortaleza
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
